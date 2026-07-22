@@ -65,11 +65,25 @@
                 <h1>Google BigQuery Release Notes</h1>
                 <p class="feed-meta" id="lastUpdated" aria-live="polite">Fetching latest updates...</p>
             </div>
-            <div class="filter-bar" role="group" aria-label="Filter release updates by category">
-                <button class="filter-chip active" data-filter="all" aria-pressed="true">All Updates</button>
-                <button class="filter-chip" data-filter="feature" aria-pressed="false">Features</button>
-                <button class="filter-chip" data-filter="changed" aria-pressed="false">Changed</button>
-                <button class="filter-chip" data-filter="issue" aria-pressed="false">Issues</button>
+            
+            <div class="feed-controls-group">
+                <!-- Live Search Bar -->
+                <div class="search-box">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input type="text" id="searchInput" class="search-input" placeholder="Search updates (e.g. JSON, SQL)..." aria-label="Search release updates">
+                    <button id="clearSearchBtn" class="btn-clear-search" aria-label="Clear search query" style="display: none;">&times;</button>
+                </div>
+
+                <!-- Filter Category Chips -->
+                <div class="filter-bar" role="group" aria-label="Filter release updates by category">
+                    <button class="filter-chip active" data-filter="all" aria-pressed="true">All Updates</button>
+                    <button class="filter-chip" data-filter="feature" aria-pressed="false">Features</button>
+                    <button class="filter-chip" data-filter="changed" aria-pressed="false">Changed</button>
+                    <button class="filter-chip" data-filter="issue" aria-pressed="false">Issues</button>
+                </div>
             </div>
         </div>
 

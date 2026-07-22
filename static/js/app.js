@@ -1,5 +1,6 @@
 let rawEntries = [];
 let currentFilter = 'all';
+let searchQuery = '';
 
 document.addEventListener('DOMContentLoaded', () => {
     initTheme();
@@ -39,6 +40,29 @@ function setupEventListeners() {
 
     const exportCsvBtn = document.getElementById('exportCsvBtn');
     if (exportCsvBtn) exportCsvBtn.addEventListener('click', exportToCSV);
+
+    const searchInput = document.getElementById('searchInput');
+    const clearSearchBtn = document.getElementById('clearSearchBtn');
+
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            searchQuery = e.target.value.trim().toLowerCase();
+            if (clearSearchBtn) {
+                clearSearchBtn.style.display = searchQuery.length > 0 ? 'block' : 'none';
+            }
+            renderEntries();
+        });
+    }
+
+    if (clearSearchBtn) {
+        clearSearchBtn.addEventListener('click', () => {
+            if (searchInput) searchInput.value = '';
+            searchQuery = '';
+            clearSearchBtn.style.display = 'none';
+            renderEntries();
+            if (searchInput) searchInput.focus();
+        });
+    }
 
     const filterChips = document.querySelectorAll('.filter-chip');
     filterChips.forEach(chip => {
@@ -132,15 +156,24 @@ function renderEntries() {
         return;
     }
 
+    let matchCount = 0;
+
     rawEntries.forEach((entry, entryIdx) => {
         const parsedBlocks = parseContent(entry.content_html, entry.title, entry.link);
         
+        // Filter blocks by category and search query
         const filteredBlocks = parsedBlocks.filter(b => {
-            if (currentFilter === 'all') return true;
-            return b.category.toLowerCase() === currentFilter;
+            const matchesCategory = (currentFilter === 'all' || b.category.toLowerCase() === currentFilter);
+            const matchesSearch = searchQuery === '' || 
+                                  b.plainText.toLowerCase().includes(searchQuery) || 
+                                  b.category.toLowerCase().includes(searchQuery) ||
+                                  entry.title.toLowerCase().includes(searchQuery);
+            return matchesCategory && matchesSearch;
         });
 
-        if (filteredBlocks.length === 0 && currentFilter !== 'all') return;
+        if (filteredBlocks.length === 0) return;
+
+        matchCount++;
 
         const card = document.createElement('article');
         card.className = 'card';
@@ -155,7 +188,7 @@ function renderEntries() {
                         <line x1="8" y1="2" x2="8" y2="6"></line>
                         <line x1="3" y1="10" x2="21" y2="10"></line>
                     </svg>
-                    <span>${escapeHtml(entry.title)}</span>
+                    <span>${highlightSearchText(escapeHtml(entry.title), searchQuery)}</span>
                 </div>
                 <div class="card-actions">
                     <button class="btn-copy" aria-label="Copy release notes for ${escapeHtml(entry.title)}" onclick="copyCardContent(${entryIdx})">
@@ -176,6 +209,7 @@ function renderEntries() {
         let contentHtml = `<div class="card-content">`;
         
         filteredBlocks.forEach(block => {
+            const blockContent = searchQuery ? highlightSearchText(block.html, searchQuery) : block.html;
             contentHtml += `
                 <div class="update-block" style="border-left-color: ${getCategoryColor(block.category)};">
                     <div class="update-block-header">
@@ -187,7 +221,7 @@ function renderEntries() {
                             </button>
                         </div>
                     </div>
-                    <div>${block.html}</div>
+                    <div>${blockContent}</div>
                 </div>
             `;
         });
@@ -196,6 +230,34 @@ function renderEntries() {
         card.innerHTML = headerHtml + contentHtml;
         container.appendChild(card);
     });
+
+    if (matchCount === 0) {
+        container.innerHTML = `
+            <div class="card" style="text-align: center; padding: 2rem;">
+                <p style="color: var(--text-muted); font-size: 1rem;">🔍 No release notes matched your search query "<strong>${escapeHtml(searchQuery)}</strong>".</p>
+                <button onclick="clearSearch()" style="margin-top: 1rem; padding: 0.4rem 1rem; background: var(--accent-blue); color: #fff; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">Clear Search</button>
+            </div>
+        `;
+    }
+}
+
+function clearSearch() {
+    const searchInput = document.getElementById('searchInput');
+    const clearSearchBtn = document.getElementById('clearSearchBtn');
+    if (searchInput) searchInput.value = '';
+    searchQuery = '';
+    if (clearSearchBtn) clearSearchBtn.style.display = 'none';
+    renderEntries();
+}
+
+function highlightSearchText(htmlText, query) {
+    if (!query) return htmlText;
+    const regex = new RegExp(`(${escapeRegExp(query)})`, 'gi');
+    return htmlText.replace(regex, '<mark class="search-highlight">$1</mark>');
+}
+
+function escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 function parseContent(html, dateTitle, link) {
@@ -283,9 +345,14 @@ function exportToCSV() {
     rawEntries.forEach(entry => {
         const blocks = parseContent(entry.content_html, entry.title, entry.link);
         blocks.forEach(b => {
-            if (currentFilter !== 'all' && b.category.toLowerCase() !== currentFilter) {
-                return;
-            }
+            const matchesCategory = (currentFilter === 'all' || b.category.toLowerCase() === currentFilter);
+            const matchesSearch = searchQuery === '' || 
+                                  b.plainText.toLowerCase().includes(searchQuery) || 
+                                  b.category.toLowerCase().includes(searchQuery) ||
+                                  entry.title.toLowerCase().includes(searchQuery);
+
+            if (!matchesCategory || !matchesSearch) return;
+
             const cleanText = b.plainText.replace(/"/g, '""');
             rows.push([
                 `"${entry.title.replace(/"/g, '""')}"`,
@@ -305,7 +372,7 @@ function exportToCSV() {
     link.click();
     document.body.removeChild(link);
 
-    showToast('Exported release notes to CSV! 📊');
+    showToast('Exported filtered release notes to CSV! 📊');
 }
 
 function showToast(message) {
