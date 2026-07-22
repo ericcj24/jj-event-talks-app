@@ -23,18 +23,40 @@
                 <span class="logo-title">BigQuery Pulse</span>
             </div>
 
-            <!-- Refresh Button with Spinner -->
-            <button id="refreshBtn" class="refresh-btn" title="Refresh BigQuery Release Notes">
-                <span class="spinner"></span>
-                <svg class="icon-refresh" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M23 4v6h-6"></path>
-                    <path d="M1 20v-6h6"></path>
-                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
-                </svg>
-                <span>Refresh Feed</span>
-            </button>
+            <div class="header-controls">
+                <!-- Theme Toggle Switch -->
+                <div id="themeToggle" class="theme-toggle" title="Toggle Light / Dark Mode">
+                    <span class="toggle-icon">🌙</span>
+                    <div class="toggle-switch"></div>
+                    <span class="toggle-icon">☀️</span>
+                </div>
+
+                <!-- Export to CSV Button -->
+                <button id="exportCsvBtn" class="export-btn" title="Export release notes to CSV">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    <span>Export CSV</span>
+                </button>
+
+                <!-- Refresh Button with Spinner -->
+                <button id="refreshBtn" class="refresh-btn" title="Refresh BigQuery Release Notes">
+                    <span class="spinner"></span>
+                    <svg class="icon-refresh" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M23 4v6h-6"></path>
+                        <path d="M1 20v-6h6"></path>
+                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                    </svg>
+                    <span>Refresh Feed</span>
+                </button>
+            </div>
         </div>
     </header>
+
+    <!-- Toast Notification Element -->
+    <div id="toast" class="toast"></div>
 
     <!-- Main Container -->
     <main class="main-container">

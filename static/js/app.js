@@ -2,13 +2,33 @@ let rawEntries = [];
 let currentFilter = 'all';
 
 document.addEventListener('DOMContentLoaded', () => {
+    initTheme();
     fetchReleaseNotes();
     setupEventListeners();
 });
 
+function initTheme() {
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.body.setAttribute('data-theme', savedTheme);
+}
+
+function toggleTheme() {
+    const currentTheme = document.body.getAttribute('data-theme') || 'dark';
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    document.body.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    showToast(`Switched to ${newTheme} mode`);
+}
+
 function setupEventListeners() {
     const refreshBtn = document.getElementById('refreshBtn');
-    refreshBtn.addEventListener('click', fetchReleaseNotes);
+    if (refreshBtn) refreshBtn.addEventListener('click', fetchReleaseNotes);
+
+    const themeToggle = document.getElementById('themeToggle');
+    if (themeToggle) themeToggle.addEventListener('click', toggleTheme);
+
+    const exportCsvBtn = document.getElementById('exportCsvBtn');
+    if (exportCsvBtn) exportCsvBtn.addEventListener('click', exportToCSV);
 
     const filterChips = document.querySelectorAll('.filter-chip');
     filterChips.forEach(chip => {
@@ -21,28 +41,32 @@ function setupEventListeners() {
     });
 
     const tweetTextarea = document.getElementById('tweetTextarea');
-    tweetTextarea.addEventListener('input', updateCharCount);
+    if (tweetTextarea) tweetTextarea.addEventListener('input', updateCharCount);
 
     const closeModalBtn = document.getElementById('closeModalBtn');
-    closeModalBtn.addEventListener('click', closeModal);
+    if (closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
 
     const modalOverlay = document.getElementById('modalOverlay');
-    modalOverlay.addEventListener('click', (e) => {
-        if (e.target === modalOverlay) closeModal();
-    });
+    if (modalOverlay) {
+        modalOverlay.addEventListener('click', (e) => {
+            if (e.target === modalOverlay) closeModal();
+        });
+    }
 
     const postTweetBtn = document.getElementById('postTweetBtn');
-    postTweetBtn.addEventListener('click', launchTweetIntent);
+    if (postTweetBtn) postTweetBtn.addEventListener('click', launchTweetIntent);
 }
 
 async function fetchReleaseNotes() {
     const refreshBtn = document.getElementById('refreshBtn');
     const container = document.getElementById('entriesContainer');
     
-    refreshBtn.classList.add('loading');
-    refreshBtn.disabled = true;
+    if (refreshBtn) {
+        refreshBtn.classList.add('loading');
+        refreshBtn.disabled = true;
+    }
 
-    if (rawEntries.length === 0) {
+    if (rawEntries.length === 0 && container) {
         container.innerHTML = `
             <div class="card skeleton" style="height: 140px;"></div>
             <div class="card skeleton" style="height: 140px;"></div>
@@ -56,7 +80,8 @@ async function fetchReleaseNotes() {
         
         if (data.status === 'success') {
             rawEntries = data.entries;
-            document.getElementById('lastUpdated').textContent = `Loaded ${data.count} release dates`;
+            const lastUpdatedEl = document.getElementById('lastUpdated');
+            if (lastUpdatedEl) lastUpdatedEl.textContent = `Loaded ${data.count} release dates`;
             renderEntries();
         } else {
             showError("Failed to load release notes: " + data.message);
@@ -65,13 +90,16 @@ async function fetchReleaseNotes() {
         showError("Network error while fetching release notes.");
         console.error(err);
     } finally {
-        refreshBtn.classList.remove('loading');
-        refreshBtn.disabled = false;
+        if (refreshBtn) {
+            refreshBtn.classList.remove('loading');
+            refreshBtn.disabled = false;
+        }
     }
 }
 
 function renderEntries() {
     const container = document.getElementById('entriesContainer');
+    if (!container) return;
     container.innerHTML = '';
 
     if (!rawEntries || rawEntries.length === 0) {
@@ -79,7 +107,7 @@ function renderEntries() {
         return;
     }
 
-    rawEntries.forEach(entry => {
+    rawEntries.forEach((entry, entryIdx) => {
         const parsedBlocks = parseContent(entry.content_html, entry.title, entry.link);
         
         // Filter blocks if needed
@@ -105,6 +133,13 @@ function renderEntries() {
                     <span>${escapeHtml(entry.title)}</span>
                 </div>
                 <div class="card-actions">
+                    <button class="btn-copy" onclick="copyCardContent(${entryIdx})">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                        Copy
+                    </button>
                     <button class="btn-tweet" onclick="prepareTweetForEntry('${escapeHtml(entry.title)}', '${escapeHtml(entry.link)}')">
                         <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
                         Share Date
@@ -120,10 +155,12 @@ function renderEntries() {
                 <div class="update-block" style="border-left-color: ${getCategoryColor(block.category)};">
                     <div class="update-block-header">
                         <span class="tag-badge ${block.category.toLowerCase()}">${escapeHtml(block.category)}</span>
-                        <button class="btn-tweet-block" onclick="openTweetModal('${escapeHtml(block.plainText)}', '${escapeHtml(entry.title)}', '${escapeHtml(entry.link)}')">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-                            Tweet this update
-                        </button>
+                        <div class="block-actions">
+                            <button class="btn-tweet-block" onclick="openTweetModal('${escapeHtml(block.plainText)}', '${escapeHtml(entry.title)}', '${escapeHtml(entry.link)}')">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                                Tweet update
+                            </button>
+                        </div>
                     </div>
                     <div>${block.html}</div>
                 </div>
@@ -192,13 +229,76 @@ function getCategoryColor(category) {
     return '#8b5cf6';
 }
 
+function copyCardContent(entryIdx) {
+    if (!rawEntries[entryIdx]) return;
+    const entry = rawEntries[entryIdx];
+    const blocks = parseContent(entry.content_html, entry.title, entry.link);
+    
+    let textToCopy = `Google BigQuery Release Notes - ${entry.title}\nLink: ${entry.link}\n\n`;
+    blocks.forEach(b => {
+        textToCopy += `[${b.category}]\n${b.plainText}\n\n`;
+    });
+
+    navigator.clipboard.writeText(textToCopy.trim()).then(() => {
+        showToast('Card copied to clipboard! 📋');
+    }).catch(err => {
+        console.error('Failed to copy: ', err);
+        showToast('Failed to copy to clipboard.');
+    });
+}
+
+function exportToCSV() {
+    if (!rawEntries || rawEntries.length === 0) {
+        showToast('No release notes available to export.');
+        return;
+    }
+
+    const rows = [['Date', 'Category', 'Update Content', 'Link']];
+
+    rawEntries.forEach(entry => {
+        const blocks = parseContent(entry.content_html, entry.title, entry.link);
+        blocks.forEach(b => {
+            if (currentFilter !== 'all' && b.category.toLowerCase() !== currentFilter) {
+                return;
+            }
+            const cleanText = b.plainText.replace(/"/g, '""');
+            rows.push([
+                `"${entry.title.replace(/"/g, '""')}"`,
+                `"${b.category.replace(/"/g, '""')}"`,
+                `"${cleanText}"`,
+                `"${entry.link}"`
+            ]);
+        });
+    });
+
+    const csvContent = 'data:text/csv;charset=utf-8,' + rows.map(e => e.join(',')).join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `bigquery_release_notes_${new Date().toISOString().slice(0,10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    showToast('Exported release notes to CSV! 📊');
+}
+
+function showToast(message) {
+    const toast = document.getElementById('toast');
+    if (!toast) return;
+    toast.textContent = message;
+    toast.classList.add('show');
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 3000);
+}
+
 function prepareTweetForEntry(title, link) {
     const tweetText = `Check out Google BigQuery updates for ${title}! ${link} #BigQuery #GoogleCloud`;
     showModal(tweetText);
 }
 
 function openTweetModal(textSnippet, title, link) {
-    // Format text nicely for Twitter
     const cleanSnippet = textSnippet.replace(/\s+/g, ' ').substring(0, 160);
     const tweetText = `🚀 BigQuery Update (${title}):\n"${cleanSnippet}..."\n\nRead more: ${link}\n#BigQuery #GoogleCloud`;
     showModal(tweetText);
@@ -206,18 +306,22 @@ function openTweetModal(textSnippet, title, link) {
 
 function showModal(text) {
     const textarea = document.getElementById('tweetTextarea');
-    textarea.value = text;
+    if (textarea) textarea.value = text;
     updateCharCount();
-    document.getElementById('modalOverlay').classList.add('active');
+    const overlay = document.getElementById('modalOverlay');
+    if (overlay) overlay.classList.add('active');
 }
 
 function closeModal() {
-    document.getElementById('modalOverlay').classList.remove('active');
+    const overlay = document.getElementById('modalOverlay');
+    if (overlay) overlay.classList.remove('active');
 }
 
 function updateCharCount() {
     const textarea = document.getElementById('tweetTextarea');
     const counter = document.getElementById('charCounter');
+    if (!textarea || !counter) return;
+
     const len = textarea.value.length;
     counter.textContent = `${len} / 280`;
 
@@ -230,7 +334,9 @@ function updateCharCount() {
 }
 
 function launchTweetIntent() {
-    const text = document.getElementById('tweetTextarea').value;
+    const textarea = document.getElementById('tweetTextarea');
+    if (!textarea) return;
+    const text = textarea.value;
     const tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
     window.open(tweetUrl, '_blank');
     closeModal();
@@ -238,11 +344,13 @@ function launchTweetIntent() {
 
 function showError(msg) {
     const container = document.getElementById('entriesContainer');
-    container.innerHTML = `
-        <div class="card" style="border-color: #ef4444;">
-            <p style="color: #ef4444; font-weight: 600;">⚠️ ${escapeHtml(msg)}</p>
-        </div>
-    `;
+    if (container) {
+        container.innerHTML = `
+            <div class="card" style="border-color: #ef4444;">
+                <p style="color: #ef4444; font-weight: 600;">⚠️ ${escapeHtml(msg)}</p>
+            </div>
+        `;
+    }
 }
 
 function escapeHtml(str) {
