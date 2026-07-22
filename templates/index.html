@@ -12,10 +12,10 @@
 <body>
 
     <!-- Header Navigation -->
-    <header class="header">
+    <header class="header" role="banner">
         <div class="header-container">
             <div class="logo-group">
-                <div class="logo-icon">
+                <div class="logo-icon" aria-hidden="true">
                     <svg viewBox="0 0 24 24">
                         <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
                     </svg>
@@ -25,15 +25,15 @@
 
             <div class="header-controls">
                 <!-- Theme Toggle Switch -->
-                <div id="themeToggle" class="theme-toggle" title="Toggle Light / Dark Mode">
-                    <span class="toggle-icon">🌙</span>
+                <button id="themeToggle" class="theme-toggle" role="switch" aria-checked="false" aria-label="Toggle Light and Dark Mode" title="Toggle Light / Dark Mode">
+                    <span class="toggle-icon" aria-hidden="true">🌙</span>
                     <div class="toggle-switch"></div>
-                    <span class="toggle-icon">☀️</span>
-                </div>
+                    <span class="toggle-icon" aria-hidden="true">☀️</span>
+                </button>
 
                 <!-- Export to CSV Button -->
-                <button id="exportCsvBtn" class="export-btn" title="Export release notes to CSV">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <button id="exportCsvBtn" class="export-btn" aria-label="Export release notes to CSV file" title="Export release notes to CSV">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                         <polyline points="7 10 12 15 17 10"></polyline>
                         <line x1="12" y1="15" x2="12" y2="3"></line>
@@ -42,9 +42,9 @@
                 </button>
 
                 <!-- Refresh Button with Spinner -->
-                <button id="refreshBtn" class="refresh-btn" title="Refresh BigQuery Release Notes">
-                    <span class="spinner"></span>
-                    <svg class="icon-refresh" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <button id="refreshBtn" class="refresh-btn" aria-label="Refresh BigQuery Release Notes" title="Refresh BigQuery Release Notes">
+                    <span class="spinner" aria-hidden="true"></span>
+                    <svg class="icon-refresh" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                         <path d="M23 4v6h-6"></path>
                         <path d="M1 20v-6h6"></path>
                         <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
@@ -55,46 +55,46 @@
         </div>
     </header>
 
-    <!-- Toast Notification Element -->
-    <div id="toast" class="toast"></div>
+    <!-- Toast Notification Element (Polite ARIA Live Region) -->
+    <div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 
     <!-- Main Container -->
-    <main class="main-container">
+    <main class="main-container" role="main">
         <div class="feed-header">
             <div class="feed-title-area">
                 <h1>Google BigQuery Release Notes</h1>
-                <p class="feed-meta" id="lastUpdated">Fetching latest updates...</p>
+                <p class="feed-meta" id="lastUpdated" aria-live="polite">Fetching latest updates...</p>
             </div>
-            <div class="filter-bar">
-                <button class="filter-chip active" data-filter="all">All Updates</button>
-                <button class="filter-chip" data-filter="feature">Features</button>
-                <button class="filter-chip" data-filter="changed">Changed</button>
-                <button class="filter-chip" data-filter="issue">Issues</button>
+            <div class="filter-bar" role="group" aria-label="Filter release updates by category">
+                <button class="filter-chip active" data-filter="all" aria-pressed="true">All Updates</button>
+                <button class="filter-chip" data-filter="feature" aria-pressed="false">Features</button>
+                <button class="filter-chip" data-filter="changed" aria-pressed="false">Changed</button>
+                <button class="filter-chip" data-filter="issue" aria-pressed="false">Issues</button>
             </div>
         </div>
 
         <!-- Release Notes Entries List -->
-        <div id="entriesContainer" class="entries-list">
+        <div id="entriesContainer" class="entries-list" aria-label="Release Notes Feed">
             <!-- Dynamically populated -->
         </div>
     </main>
 
     <!-- Modal for Tweet Composer -->
-    <div id="modalOverlay" class="modal-overlay">
+    <div id="modalOverlay" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-hidden="true">
         <div class="modal-card">
             <div class="modal-header">
-                <div class="modal-title">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="#1d9bf0">
+                <div class="modal-title" id="modalTitle">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="#1d9bf0" aria-hidden="true">
                         <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
                     </svg>
                     <span>Compose Tweet</span>
                 </div>
-                <button id="closeModalBtn" class="btn-close">&times;</button>
+                <button id="closeModalBtn" class="btn-close" aria-label="Close modal">&times;</button>
             </div>
-            <textarea id="tweetTextarea" class="tweet-textarea" placeholder="What's happening?"></textarea>
+            <textarea id="tweetTextarea" class="tweet-textarea" aria-label="Tweet text content" placeholder="What's happening?"></textarea>
             <div class="modal-footer">
-                <span id="charCounter" class="char-counter">0 / 280</span>
-                <button id="postTweetBtn" class="btn-post-tweet">Tweet</button>
+                <span id="charCounter" class="char-counter" aria-live="polite">0 / 280</span>
+                <button id="postTweetBtn" class="btn-post-tweet" aria-label="Share tweet on Twitter">Tweet</button>
             </div>
         </div>
     </div>

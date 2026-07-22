@@ -5,11 +5,13 @@ document.addEventListener('DOMContentLoaded', () => {
     initTheme();
     fetchReleaseNotes();
     setupEventListeners();
+    setupKeyboardShortcuts();
 });
 
 function initTheme() {
     const savedTheme = localStorage.getItem('theme') || 'dark';
     document.body.setAttribute('data-theme', savedTheme);
+    updateThemeToggleAria(savedTheme);
 }
 
 function toggleTheme() {
@@ -17,7 +19,15 @@ function toggleTheme() {
     const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
     document.body.setAttribute('data-theme', newTheme);
     localStorage.setItem('theme', newTheme);
+    updateThemeToggleAria(newTheme);
     showToast(`Switched to ${newTheme} mode`);
+}
+
+function updateThemeToggleAria(theme) {
+    const themeToggle = document.getElementById('themeToggle');
+    if (themeToggle) {
+        themeToggle.setAttribute('aria-checked', theme === 'light' ? 'true' : 'false');
+    }
 }
 
 function setupEventListeners() {
@@ -33,8 +43,12 @@ function setupEventListeners() {
     const filterChips = document.querySelectorAll('.filter-chip');
     filterChips.forEach(chip => {
         chip.addEventListener('click', (e) => {
-            filterChips.forEach(c => c.classList.remove('active'));
+            filterChips.forEach(c => {
+                c.classList.remove('active');
+                c.setAttribute('aria-pressed', 'false');
+            });
             e.target.classList.add('active');
+            e.target.setAttribute('aria-pressed', 'true');
             currentFilter = e.target.dataset.filter;
             renderEntries();
         });
@@ -57,6 +71,17 @@ function setupEventListeners() {
     if (postTweetBtn) postTweetBtn.addEventListener('click', launchTweetIntent);
 }
 
+function setupKeyboardShortcuts() {
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const overlay = document.getElementById('modalOverlay');
+            if (overlay && overlay.classList.contains('active')) {
+                closeModal();
+            }
+        }
+    });
+}
+
 async function fetchReleaseNotes() {
     const refreshBtn = document.getElementById('refreshBtn');
     const container = document.getElementById('entriesContainer');
@@ -68,9 +93,9 @@ async function fetchReleaseNotes() {
 
     if (rawEntries.length === 0 && container) {
         container.innerHTML = `
-            <div class="card skeleton" style="height: 140px;"></div>
-            <div class="card skeleton" style="height: 140px;"></div>
-            <div class="card skeleton" style="height: 140px;"></div>
+            <div class="card skeleton" style="height: 140px;" aria-hidden="true"></div>
+            <div class="card skeleton" style="height: 140px;" aria-hidden="true"></div>
+            <div class="card skeleton" style="height: 140px;" aria-hidden="true"></div>
         `;
     }
 
@@ -110,7 +135,6 @@ function renderEntries() {
     rawEntries.forEach((entry, entryIdx) => {
         const parsedBlocks = parseContent(entry.content_html, entry.title, entry.link);
         
-        // Filter blocks if needed
         const filteredBlocks = parsedBlocks.filter(b => {
             if (currentFilter === 'all') return true;
             return b.category.toLowerCase() === currentFilter;
@@ -118,13 +142,14 @@ function renderEntries() {
 
         if (filteredBlocks.length === 0 && currentFilter !== 'all') return;
 
-        const card = document.createElement('div');
+        const card = document.createElement('article');
         card.className = 'card';
+        card.setAttribute('aria-labelledby', `card-title-${entryIdx}`);
 
         const headerHtml = `
             <div class="card-header">
-                <div class="card-date">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <div class="card-date" id="card-title-${entryIdx}">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                         <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                         <line x1="16" y1="2" x2="16" y2="6"></line>
                         <line x1="8" y1="2" x2="8" y2="6"></line>
@@ -133,15 +158,15 @@ function renderEntries() {
                     <span>${escapeHtml(entry.title)}</span>
                 </div>
                 <div class="card-actions">
-                    <button class="btn-copy" onclick="copyCardContent(${entryIdx})">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <button class="btn-copy" aria-label="Copy release notes for ${escapeHtml(entry.title)}" onclick="copyCardContent(${entryIdx})">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                             <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                             <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                         </svg>
                         Copy
                     </button>
-                    <button class="btn-tweet" onclick="prepareTweetForEntry('${escapeHtml(entry.title)}', '${escapeHtml(entry.link)}')">
-                        <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                    <button class="btn-tweet" aria-label="Share release notes for ${escapeHtml(entry.title)} on Twitter" onclick="prepareTweetForEntry('${escapeHtml(entry.title)}', '${escapeHtml(entry.link)}')">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
                         Share Date
                     </button>
                 </div>
@@ -156,8 +181,8 @@ function renderEntries() {
                     <div class="update-block-header">
                         <span class="tag-badge ${block.category.toLowerCase()}">${escapeHtml(block.category)}</span>
                         <div class="block-actions">
-                            <button class="btn-tweet-block" onclick="openTweetModal('${escapeHtml(block.plainText)}', '${escapeHtml(entry.title)}', '${escapeHtml(entry.link)}')">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                            <button class="btn-tweet-block" aria-label="Tweet this ${escapeHtml(block.category)} update" onclick="openTweetModal('${escapeHtml(block.plainText)}', '${escapeHtml(entry.title)}', '${escapeHtml(entry.link)}')">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
                                 Tweet update
                             </button>
                         </div>
@@ -309,12 +334,19 @@ function showModal(text) {
     if (textarea) textarea.value = text;
     updateCharCount();
     const overlay = document.getElementById('modalOverlay');
-    if (overlay) overlay.classList.add('active');
+    if (overlay) {
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden', 'false');
+    }
+    if (textarea) textarea.focus();
 }
 
 function closeModal() {
     const overlay = document.getElementById('modalOverlay');
-    if (overlay) overlay.classList.remove('active');
+    if (overlay) {
+        overlay.classList.remove('active');
+        overlay.setAttribute('aria-hidden', 'true');
+    }
 }
 
 function updateCharCount() {
