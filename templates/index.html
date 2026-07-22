@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google BigQuery Release Notes & Social Publisher</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header class="header">
+        <div class="header-container">
+            <div class="logo-group">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                    </svg>
+                </div>
+                <span class="logo-title">BigQuery Pulse</span>
+            </div>
+
+            <!-- Refresh Button with Spinner -->
+            <button id="refreshBtn" class="refresh-btn" title="Refresh BigQuery Release Notes">
+                <span class="spinner"></span>
+                <svg class="icon-refresh" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M23 4v6h-6"></path>
+                    <path d="M1 20v-6h6"></path>
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                </svg>
+                <span>Refresh Feed</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="main-container">
+        <div class="feed-header">
+            <div class="feed-title-area">
+                <h1>Google BigQuery Release Notes</h1>
+                <p class="feed-meta" id="lastUpdated">Fetching latest updates...</p>
+            </div>
+            <div class="filter-bar">
+                <button class="filter-chip active" data-filter="all">All Updates</button>
+                <button class="filter-chip" data-filter="feature">Features</button>
+                <button class="filter-chip" data-filter="changed">Changed</button>
+                <button class="filter-chip" data-filter="issue">Issues</button>
+            </div>
+        </div>
+
+        <!-- Release Notes Entries List -->
+        <div id="entriesContainer" class="entries-list">
+            <!-- Dynamically populated -->
+        </div>
+    </main>
+
+    <!-- Modal for Tweet Composer -->
+    <div id="modalOverlay" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="#1d9bf0">
+                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                    </svg>
+                    <span>Compose Tweet</span>
+                </div>
+                <button id="closeModalBtn" class="btn-close">&times;</button>
+            </div>
+            <textarea id="tweetTextarea" class="tweet-textarea" placeholder="What's happening?"></textarea>
+            <div class="modal-footer">
+                <span id="charCounter" class="char-counter">0 / 280</span>
+                <button id="postTweetBtn" class="btn-post-tweet">Tweet</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

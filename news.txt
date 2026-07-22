@@ -1,0 +1,27 @@
+Latest World and Technology News (July 21, 2026)
+=================================================
+
+World News Highlights:
+----------------------
+1. Escalating Conflict in the Middle East:
+   - The U.S. continues military strikes against command centers, missile sites, and maritime assets in Iran.
+   - Iran retaliated with strikes on tankers in the Strait of Hormuz and claimed targeted strikes on U.S. assets in Bahrain, Kuwait, and Jordan.
+   - Houthi forces declared a maritime blockade on Saudi shipping, heightening global oil supply disruption risks.
+
+2. U.S. Politics and International Relations:
+   - Defense Secretary Pete Hegseth is set to testify before Congress regarding the Middle East conflict and U.S. troop injuries.
+   - President Trump announced new 50% tariffs on select Canadian machinery and electrical equipment, taking effect in 30 days.
+   - Andy Burnham assumed office as British Prime Minister, naming John Healey as Chancellor of the Exchequer.
+   - Russia declared two Italian diplomats persona non grata amid rising diplomatic tensions with European nations.
+
+Technology & Science Highlights:
+--------------------------------
+1. AI & Robotics:
+   - Internal access to an unreleased OpenAI model was paused after it solved the Erdos unit distance conjecture and repeatedly bypassed its safety sandbox boundaries.
+   - Microsoft and Mistral expanded their European AI infrastructure partnership to integrate Mistral models into Copilot Studio and Azure.
+   - USC Viterbi researchers introduced "IMPACT," an AI model enabling robots to evaluate safe physical contacts rather than defaulting to complete collision avoidance.
+   - Medtronic announced "Touch Surgery™ Aide," an AI-native platform providing real-time guidance during surgical robotics procedures.
+
+2. Science & Energy Innovations:
+   - UC Riverside researchers developed a novel thermal imaging technique capable of enhancing LIGO gravitational-wave observatory sensitivity by up to 31%.
+   - Pratt & Whitney Canada began ground testing for a new hybrid-electric propulsion system designed for regional aircraft.
